@@ -3,7 +3,7 @@ service: bitcoin-nupl-notifier
 provider:
   name: aws
   region: ap-southeast-2
-  runtime: nodejs21.x
+  runtime: nodejs20.x
 
 functions:
   puppeteerExample:
