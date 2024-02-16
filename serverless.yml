@@ -2,6 +2,7 @@ service: bitcoin-nupl-notifier
 
 provider:
   name: aws
+  deploymentMethod: direct
   region: ap-southeast-2
   runtime: nodejs20.x
 
