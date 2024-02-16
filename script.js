@@ -1,9 +1,15 @@
-import { launch } from 'puppeteer-core';
+const chromium = require("@sparticuz/chromium")
+const puppeteer = require("puppeteer-core")
 
 module.exports.handler = async (e) => {
-    const browser = await launch({
-        executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+    const browser = await puppeteer.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(),
+        headless: chromium.headless,
+        ignoreHTTPSErrors: true,
     });
+
     const page = await browser.newPage();
     await page.goto('https://www.lookintobitcoin.com/charts/relative-unrealized-profit--loss/', {
         waitUntil: 'networkidle2'
