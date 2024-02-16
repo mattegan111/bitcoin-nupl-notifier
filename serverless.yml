@@ -6,7 +6,7 @@ provider:
   runtime: nodejs20.x
 
 functions:
-  puppeteerExample:
+  bitcoin-nupl-notifier:
     handler: script.handler
     timeout: 20
     events:
