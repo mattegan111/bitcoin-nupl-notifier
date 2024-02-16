@@ -1,6 +1,6 @@
 import { launch } from 'puppeteer-core';
 
-(async () => {
+exports.handler(async () => {
     const browser = await launch({
         executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
     });
