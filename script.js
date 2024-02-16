@@ -1,6 +1,6 @@
 import { launch } from 'puppeteer-core';
 
-exports.handler(async () => {
+module.exports.handler = async (e) => {
     const browser = await launch({
         executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
     });
@@ -20,4 +20,6 @@ exports.handler(async () => {
     console.log('Last Y Value:', result);
 
     await browser.close();
-})();
+
+    return e
+};
