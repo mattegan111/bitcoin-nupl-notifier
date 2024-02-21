@@ -1,7 +1,7 @@
-const chromium = require("@sparticuz/chromium")
-const puppeteer = require("puppeteer-core")
+import chromium from "@sparticuz/chromium";
+import puppeteer from "puppeteer-core";
 
-module.exports.handler = async (e) => {
+export const handler = async (e) => {
     const browser = await puppeteer.launch({
         args: chromium.args,
         defaultViewport: chromium.defaultViewport,
@@ -26,6 +26,8 @@ module.exports.handler = async (e) => {
     console.log('Last Y Value:', result);
 
     await browser.close();
+    
+    const response = {result : result};
 
-    return e
+    return response
 };
