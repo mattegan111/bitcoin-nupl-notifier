@@ -3,7 +3,8 @@ import puppeteer from "puppeteer-core";
 import AWS from "aws-sdk"
 const ses = new AWS.SES({region: 'ap-southeast-2'});
 
-const levelsOfInterest = [0.40, 0.41, 0.68, 0.70, 0.74]; //NUPL levels at which user should be notified
+const levelsOfConcern = [0.40, 0.41, 0.68, 0.70, 0.74]; //NUPL levels at which I intend to sell
+const lowestLevelOfConcern = Math.min(levelsOfConcern);
 
 export const handler = async (e) => {
     const browser = await puppeteer.launch({
@@ -22,27 +23,36 @@ export const handler = async (e) => {
     // Wait for the element with the specified class to be rendered
     await page.waitForSelector('.js-plotly-plot');
 
-    // Extract the data
-    const result = await page.evaluate(() => {
-        return document.querySelector('.js-plotly-plot').data.slice(-1)[0].y.slice(-1)[0];
+    // Extract the NUPL values from the last 10 days, reverse chronological
+    const fortnightOfNUPL = await page.evaluate(() => {
+        return document.querySelector('.js-plotly-plot').data.slice(-1)[0].y.slice(-14).reverse();
     });
+    const yesterdaysNUPL = fortnightOfNUPL[0];
+    console.log('Last Y Value:', fortnightOfNUPL);
     await browser.close();
-    console.log('Last Y Value:', result);
 
-    if(levelsOfInterest.some(x => x < result)){
-        await sendEmail(result, levelsOfInterest);
+    // Send email if NUPL has reached a new high for the last fortnight and NUPL is sufficiently concerning
+    const newFortnightlyHigh = fortnightOfNUPL.every(x => x <= yesterdaysNUPL);
+    const levelIsConcerning = yesterdaysNUPL > lowestLevelOfConcern;
+    if(newFortnightlyHigh && levelIsConcerning){
+        // Make a string of which NUPL levels have been exceeded
+        const levelsExceededStr = levelsOfConcern
+        .filter(level => level < yesterdaysNUPL)
+        .sort((a, b) => b - a)
+        .join(', ');
+
+        // Send Alert email
+        await sendEmail(yesterdaysNUPL, levelsExceededStr);
+    } else {
+        // Send dummy email for monitoring purposes
+        await sendEmail(0, 'TEST EMAIL ONLY'); 
     }
     
-    const response = {result : result};
+    const response = {result : yesterdaysNUPL};
     return response
 };
 
-const sendEmail = async (result, levelsOfInterest) => {
-    // Make a record of which NUPL levels have been exceeded
-    const levelsExceededStr = levelsOfInterest
-    .filter(level => level < result)
-    .sort((a, b) => b - a)
-    .join(', ');
+const sendEmail = async (yesterdaysNUPL, levelsExceededStr) => {
 
     const emailDetails = {
         Destination: {
@@ -52,7 +62,7 @@ const sendEmail = async (result, levelsOfInterest) => {
             Body: {
                 Text: { Data: `${levelsExceededStr} NUPL has been hit` },
             },
-            Subject: { Data: `NUPL: ${result}` },
+            Subject: { Data: `NUPL: ${yesterdaysNUPL}` },
         },
         Source: 'mnegan93@gmail.com',
     };
