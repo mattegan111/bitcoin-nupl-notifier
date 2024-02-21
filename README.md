@@ -1,6 +1,6 @@
 # Bitcoin NUPL Notifier #
 
-## Scrapes the web to alert you when key indicators signal excessive market greed ##
+## Scrapes the web and alerts you when a key indicator signals excessive market greed ##
 
 
 ### Description ###
