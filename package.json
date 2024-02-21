@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "@sparticuz/chromium": "^112.0.2",
+    "aws-sdk": "^2.1562.0",
     "puppeteer-core": "19.8"
   }
 }
