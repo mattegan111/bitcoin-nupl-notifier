@@ -1,10 +1,10 @@
 import chromium from "@sparticuz/chromium";
 import puppeteer from "puppeteer-core";
-import AWS from "aws-sdk"
+import AWS from "aws-sdk";
 const ses = new AWS.SES({region: 'ap-southeast-2'});
 
-const levelsOfConcern = [0.40, 0.41, 0.68, 0.70, 0.74]; //NUPL levels at which I intend to sell
-const lowestLevelOfConcern = Math.min(levelsOfConcern);
+const levelsOfConcern = [0.582, 0.68, 0.70, 0.74]; //NUPL levels at which I intend to sell
+const lowestLevelOfConcern = Math.min(...levelsOfConcern);
 
 export const handler = async (e) => {
     const browser = await puppeteer.launch({
@@ -28,10 +28,11 @@ export const handler = async (e) => {
         return document.querySelector('.js-plotly-plot').data.slice(-1)[0].y.slice(-14).reverse();
     });
     const yesterdaysNUPL = fortnightOfNUPL[0];
-    console.log('Last Y Value:', fortnightOfNUPL);
+    console.log('Last Y Value:', fortnightOfNUPL[0]);
     await browser.close();
 
     // Send email if NUPL has reached a new high for the last fortnight and NUPL is sufficiently concerning
+    
     const newFortnightlyHigh = fortnightOfNUPL.every(x => x <= yesterdaysNUPL);
     const levelIsConcerning = yesterdaysNUPL > lowestLevelOfConcern;
     if(newFortnightlyHigh && levelIsConcerning){
@@ -45,11 +46,14 @@ export const handler = async (e) => {
         await sendEmail(yesterdaysNUPL, levelsExceededStr);
     } else {
         // Send dummy email for monitoring purposes
-        await sendEmail(0, 'TEST EMAIL ONLY'); 
+        let testEmailStr = `
+            newFortnightlyHigh ${newFortnightlyHigh.toString()}, 
+            levelIsConcerning ${levelIsConcerning.toString()} 
+        `;
+        await sendEmail(yesterdaysNUPL, testEmailStr); 
     }
     
-    const response = {result : yesterdaysNUPL};
-    return response
+    return {result : yesterdaysNUPL};
 };
 
 const sendEmail = async (yesterdaysNUPL, levelsExceededStr) => {
@@ -73,4 +77,4 @@ const sendEmail = async (yesterdaysNUPL, levelsExceededStr) => {
       } catch (err) {
         console.log(err, err.stack);
     }
-}
+};
